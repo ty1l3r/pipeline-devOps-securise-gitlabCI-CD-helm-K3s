@@ -1,0 +1,34 @@
+gateway:
+  replicaCount: 3
+  image:
+    repository: jhtyl13r/jenkins-gateway
+    tag: latest
+    pullPolicy: Always
+  service:
+    type: NodePort
+    port: 8000
+    targetPort: 8000
+    nodePort: 31500
+
+order:
+  replicaCount: 3
+  image:
+    repository: jhtyl13r/jenkins-orders
+    tag: latest
+    pullPolicy: Always
+  service:
+    type: NodePort
+    port: 8000
+    targetPort: 8000
+    nodePort: 31600
+
+user:
+  replicaCount: 1
+  image:
+    repository: jhtyl13r/jenkins-users
+    tag: latest
+    pullPolicy: Always
+  service:
+    type: ClusterIP
+    port: 8000
+    targetPort: 8000
