@@ -136,10 +136,10 @@ deploy_helm_dev:
   stage: deploy
   image: helm/helm
   script:
-    - echo $KUBE_CONFIG | base64 -d > /tmp/kubeconfig
+    - echo "$KUBE_CONFIG" > /tmp/kubeconfig
     - export KUBECONFIG=/tmp/kubeconfig
     - helm uninstall gateway -n dev || true
-    - helm install app-dev --namespace dev ./helm/charts/dev/ -f .helm/charts/dev/values.yaml 
+    - helm install app-dev --namespace dev ./helm/charts/dev/ -f .helm/charts/dev/values.yaml
 
 deploy_helm_staging:
   tags:
