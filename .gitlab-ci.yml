@@ -134,12 +134,16 @@ deploy_helm_dev:
   tags:
     - test
   stage: deploy
-  image: helm/helm
+  image: dtzar/helm-kubectl
   script:
     - echo "$KUBE_CONFIG" > /tmp/kubeconfig
+    - chmod 600 /tmp/kubeconfig  # Pour corriger les avertissements de sécurité
+    - cat /tmp/kubeconfig  # Pour vérifier le contenu du fichier kubeconfig
     - export KUBECONFIG=/tmp/kubeconfig
-    - helm uninstall gateway -n dev || true
-    - helm install app-dev --namespace dev ./helm/charts/dev/ -f .helm/charts/dev/values.yaml
+    - kubectl config view  # Pour vérifier que le kubeconfig est correctement chargé
+    - helm uninstall app-dev -n dev || true
+    - helm install app-dev --namespace dev ./helm/charts/dev/ -f ./helm/charts/dev/values.yaml
+
 
 deploy_helm_staging:
   tags:
