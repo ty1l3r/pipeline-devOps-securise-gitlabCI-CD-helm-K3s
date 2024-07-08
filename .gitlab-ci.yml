@@ -1,7 +1,181 @@
 stages:
-  - test
+  - build
+  - run
+  - deploy
 
-show_linux_version:
-  stage: test
+variables:
+  #DOCKER_IMAGE_NAME: registry.gitlab.com/jh.hunt3r/gitlab-exam .
+  KUBECONFIG: $KUBE_CONFIG
+  #HELM_CHART_PATH: helm
+
+build_gateway:
+  tags:
+    - test
+  stage: build
+  image: docker:19.03.12-dind
+  services:
+    - docker:19.03.12-dind
+  variables:
+    DOCKER_DRIVER: overlay2
   script:
-    - uname -a
+    - echo "Building Docker image..."
+    - cd build/gateway-img
+    - pwd
+    - docker -v
+    - docker login -u "jhtyl13r" -p "${PASSWORD_DOCKER_HUB}"
+    - docker build -t gateway:$CI_COMMIT_REF_SLUG .
+    - docker tag gateway:$CI_COMMIT_REF_SLUG jhtyl13r/jenkins-gateway
+    - docker push jhtyl13r/jenkins-gateway
+
+build_orders:
+  tags:
+    - test
+  stage: build
+  image: docker:19.03.12-dind
+  services:
+    - docker:19.03.12-dind
+  variables:
+    DOCKER_DRIVER: overlay2
+  script:
+    - echo "Building Docker image..."
+    - cd build/order-img
+    - pwd
+    - docker -v
+    - docker login -u "jhtyl13r" -p "${PASSWORD_DOCKER_HUB}"
+    - docker build -t orders:$CI_COMMIT_REF_SLUG .
+    - docker tag orders:$CI_COMMIT_REF_SLUG jhtyl13r/jenkins-orders
+    - docker push jhtyl13r/jenkins-orders
+
+build_users:
+  tags:
+    - test
+  stage: build
+  image: docker:19.03.12-dind
+  services:
+    - docker:19.03.12-dind
+  variables:
+    DOCKER_DRIVER: overlay2
+  script:
+    - echo "Building Docker image..."
+    - cd build/users-img
+    - pwd
+    - docker -v
+    - docker login -u "jhtyl13r" -p "${PASSWORD_DOCKER_HUB}"
+    - docker build -t users:$CI_COMMIT_REF_SLUG .
+    - docker tag users:$CI_COMMIT_REF_SLUG jhtyl13r/jenkins-users
+    - docker push jhtyl13r/jenkins-users
+
+run_docker_gateway:
+  tags:
+    - test
+  stage: run
+  image: docker:19.03.12-dind
+  services:
+    - docker:19.03.12-dind
+  variables:
+    DOCKER_DRIVER: overlay2
+  script:
+    - echo "Running tests..."
+    - cd build/gateway-img
+    - pwd
+    - docker -v
+    - docker login -u "jhtyl13r" -p "${PASSWORD_DOCKER_HUB}"
+    - docker pull jhtyl13r/jenkins-gateway
+    - docker rm -f gateway || true
+    - docker run -d --name gateway jhtyl13r/jenkins-gateway
+    - docker stop gateway
+    - docker rm gateway
+
+run_docker_orders:
+  tags:
+    - test
+  stage: run
+  image: docker:19.03.12-dind
+  services:
+    - docker:19.03.12-dind
+  variables:
+    DOCKER_DRIVER: overlay2
+  script:
+    - echo "Running tests..."
+    - cd build/order-img
+    - pwd
+    - docker -v
+    - docker login -u "jhtyl13r" -p "${PASSWORD_DOCKER_HUB}"
+    - docker pull jhtyl13r/jenkins-orders
+    - docker rm -f orders || true
+    - docker run -d --name orders jhtyl13r/jenkins-orders
+    - sleep 10
+    - docker stop orders
+    - docker rm orders
+
+run_docker_users:
+  tags:
+    - test
+  stage: run
+  image: docker:19.03.12-dind
+  services:
+    - docker:19.03.12-dind
+  variables:
+    DOCKER_DRIVER: overlay2
+  script:
+    - echo "Running tests..."
+    - cd build/users-img
+    - pwd
+    - docker -v
+    - docker login -u "jhtyl13r" -p "${PASSWORD_DOCKER_HUB}"
+    - docker pull jhtyl13r/jenkins-users
+    - docker rm -f users || true
+    - docker run -d --name users jhtyl13r/jenkins-users
+    - sleep 10
+    - docker stop users
+    - docker rm users
+
+deploy_helm_dev:
+  tags:
+    - test
+  stage: deploy
+  image: helm/helm
+  script:
+    - echo $KUBE_CONFIG | base64 -d > /tmp/kubeconfig
+    - export KUBECONFIG=/tmp/kubeconfig
+    - helm uninstall gateway -n dev || true
+    - helm install app-dev --namespace dev ./helm/charts/dev/ -f .helm/charts/dev/values.yaml 
+
+deploy_helm_staging:
+  tags:
+    - test
+  stage: deploy
+  image: dtzar/helm-kubectl 
+  script:
+    - export $KUBE_CONFIG=/tmp/kubeconfig
+    #- helm status orders -n dev
+    - helm uninstall app-qa -n qa || true
+    - helm install app-qa --namespace qa ./charts/qa/ -f ./charts/qa/values.yaml
+
+
+deploy_helm_qa:
+  tags:
+    - test
+  stage: deploy
+  image: dtzar/helm-kubectl
+  script:
+    - echo $KUBE_CONFIG | base64 -d > /tmp/kubeconfig
+    - export KUBECONFIG=/tmp/kubeconfig
+    #- helm status orders -n dev
+    - helm uninstall app-staging -n staging || true
+    - helm install app-staging --namespace staging ./charts/staging/ -f ./charts/staging/values.yaml
+
+deploy_helm_prod:
+  tags:
+    - test
+  stage: deploy
+  image: dtzar/helm-kubectl
+  script:
+    - echo $KUBE_CONFIG | base64 -d > /tmp/kubeconfig
+    - export KUBECONFIG=/tmp/kubeconfig
+    #- helm status orders -n dev
+    - helm uninstall app-prod -n prod || true
+    - helm install app-prod --namespace prod ./charts/prod/ -f ./charts/prod/values.yaml
+  when: manual
+  only:
+    - main
