@@ -1,0 +1,7 @@
+stages:
+  - test
+
+show_linux_version:
+  stage: test
+  script:
+    - uname -a
