@@ -1,0 +1,92 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+#build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+.pytest_cache/
+coverage.xml
+*.cover
+.coverage
+htmlcov/
+
+# Virtual Environments
+venv/
+ENV/
+.env
+.venv
+env/
+venv/
+virtualenv/
+
+# Docker
+.docker/
+.dockerignore
+docker-compose.override.yml
+
+# Kubernetes/Helm
+.helm/repository/
+.helm/repository/cache/
+*.tgz
+.kube/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Secrets and config
+.env
+*.pem
+*.key
+*.cert
+*.ca
+.env.*
+*.env
+config.json
+secrets/
+.secrets
+credentials.json
+
+# Cache files
+.cache/
+.cache_*
+.pytest_cache/
+__pycache__/
+
+# OS specific files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+*~.nib

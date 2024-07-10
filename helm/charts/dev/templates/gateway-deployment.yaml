@@ -37,3 +37,8 @@ spec:
               value: "http://user-service"
             - name: ORDERS_SERVICE_URL
               value: "http://order-service"
+            - name: JWT_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: jwt-secret

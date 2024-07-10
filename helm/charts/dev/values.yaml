@@ -1,7 +1,7 @@
 gateway:
   replicaCount: 1
   image:
-    repository: gitlab-devop-exam/gateway
+    repository: jhtyl13r/jenkins-gateway
     tag: latest
     pullPolicy: Always
   imagePullSecrets:
@@ -15,7 +15,7 @@ gateway:
 order:
   replicaCount: 1
   image:
-    repository: gitlab-devop-exam/orders
+    repository: jhtyl13r/jenkins-orders
     tag: latest
     pullPolicy: Always
   imagePullSecrets:
@@ -29,7 +29,7 @@ order:
 user:
   replicaCount: 1
   image:
-    repository: gitlab-devop-exam/users
+    repository: jhtyl13r/jenkins-users
     tag: latest
     pullPolicy: Always
   imagePullSecrets:

@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  gateway:
+    build: ./build/gateway-img
+    ports:
+      - "8000:8000"
+    environment:
+      - USERS_SERVICE_URL=http://users:8000
+      - ORDERS_SERVICE_URL=http://orders:8000
+      - JWT_SECRET_KEY=<YOUR_JWT_SECRET_KEY>
+    depends_on:
+      - users
+      - orders
+    volumes:
+      - ./build/gateway-img:/app
+    networks:
+      - microservices-net
+
+  users:
+    build: ./build/users-img
+    ports:
+      - "8001:8000"
+    volumes:
+      - ./build/users-img:/app
+    networks:
+      - microservices-net
+
+  orders:
+    build: ./build/orders-img
+    ports:
+      - "8002:8000"
+    volumes:
+      - ./build/orders-img:/app
+    networks:
+      - microservices-net
+
+networks:
+  microservices-net:
+    driver: bridge

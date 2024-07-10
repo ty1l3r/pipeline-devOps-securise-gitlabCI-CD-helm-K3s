@@ -1,94 +1,146 @@
-# gitlab-devop-exam
+# Pipeline DevOps pour Microservices avec GitLab CI/CD et Kubernetes
 
+![Diagramme d'Architecture](https://miro.medium.com/max/1400/1*wiLoL7tiINfAdbgpMJc-uA.png)
 
+## Technologies Clés
+![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
+![Kubernetes](https://img.shields.io/badge/Kubernetes-326CE5?style=for-the-badge&logo=kubernetes&logoColor=white)
+![Helm](https://img.shields.io/badge/Helm-0F1689?style=for-the-badge&logo=helm&logoColor=white)
+![GitLab CI](https://img.shields.io/badge/GitLab_CI-FCA121?style=for-the-badge&logo=gitlab&logoColor=white)
+![JWT](https://img.shields.io/badge/JWT-000000?style=for-the-badge&logo=json-web-tokens&logoColor=white)
+![REST API](https://img.shields.io/badge/REST_API-FF6C37?style=for-the-badge&logo=postman&logoColor=white)
 
-## Getting started
+## Aperçu du Projet
+Ce projet démontre un pipeline CI/CD complet pour déployer des microservices sur Kubernetes en utilisant GitLab CI/CD et Helm. Il met en valeur les pratiques DevOps modernes, notamment :
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+- **Conteneurisation** avec Docker
+- **Orchestration** avec Kubernetes
+- **Gestion des packages** avec Helm
+- **Automatisation CI/CD** avec GitLab
+- **Déploiements multi-environnements** (développement, QA, préproduction, production)
+- **Architecture microservices** avec modèle de Passerelle API
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
+L'application se compose de trois microservices :
+- Service Passerelle : Passerelle API pour le routage et l'authentification
+- Service Utilisateur : Gère l'authentification et les profils utilisateurs
+- Service Commande : Gère les commandes
 
-## Add your files
+## Architecture
 
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/ee/gitlab-basics/add-file.html#add-a-file-using-the-command-line) or push an existing Git repository with the following command:
+![Architecture Microservices](https://microservices.io/i/basic-microservices.png)
+
+L'application suit une architecture de microservices :
+- **Service Passerelle** : Agit comme une passerelle API pour gérer les requêtes, l'authentification et le routage
+- **Service Utilisateur** : Gère l'authentification et les profils utilisateurs
+- **Service Commande** : Gère les commandes
+
+## Environnements de Déploiement
+
+| Environnement | Objectif | Mise à l'échelle | Accès |
+|------------|---------|---------|--------|
+| Développement | Tests de développement | 1 réplique | Interne |
+| QA | Assurance qualité | 2 répliques | Interne |
+| Préproduction | Validation avant production | 3 répliques | Interne |
+| Production | Environnement en direct | 3+ répliques | Public (avec approbation manuelle) |
+
+## Stack Technologique
+- **Backend** : Python FastAPI
+- **Conteneurisation** : Docker 
+- **Orchestration** : Kubernetes
+- **Gestion des Packages** : Helm
+- **CI/CD** : GitLab CI/CD
+- **Authentification** : JWT
+- **Communication entre Services** : API REST
+
+## Pipeline CI/CD
+
+Le pipeline GitLab CI/CD comprend les étapes suivantes :
+1. **Test** : Exécuter les tests unitaires pour tous les services
+2. **Construction** : Construire les images Docker pour tous les microservices
+3. **Exécution** : Vérifier que les images Docker peuvent fonctionner correctement
+4. **Déploiement** : Déployer dans les environnements appropriés selon la branche/commit
+
+![Pipeline CI/CD](https://about.gitlab.com/images/ci/ci-cd-test-deploy-illustration_2x.png)
+
+## Démarrage Rapide
+
+### Prérequis
+- Docker et Docker Compose
+- Cluster Kubernetes (ou Minikube pour le développement local)
+- kubectl configuré pour votre cluster
+- Helm 3
+
+### Configuration du Développement Local
+```bash
+# Cloner le dépôt
+git clone https://gitlab.com/jh.hunt3r/gitlab-devop-exam.git
+cd gitlab-devop-exam
+
+# Exécuter avec docker-compose pour le développement local
+docker-compose up -d
+```
+
+### Déploiement sur Kubernetes
+```bash
+# Environnement de développement
+helm install app-dev --namespace dev ./helm/charts/dev/ -f ./helm/charts/dev/values.yaml
+
+# Environnement QA
+helm install app-qa --namespace qa ./helm/charts/qa/ -f ./helm/charts/qa/values.yaml
+
+# Environnement de préproduction
+helm install app-staging --namespace staging ./helm/charts/staging/ -f ./helm/charts/staging/values.yaml
+
+# Environnement de production (nécessite des approbations appropriées)
+helm install app-prod --namespace prod ./helm/charts/prod/ -f ./helm/charts/prod/values.yaml
+```
+
+## Documentation API
+La documentation API est disponible via Swagger UI lors de l'exécution des services :
+- Service Passerelle : http://localhost:31100/docs
+- Service Utilisateur : http://localhost:8001/docs
+- Service Commande : http://localhost:8002/docs
+
+## Surveillance et Observabilité
+Les services incluent des endpoints de vérification de santé et sont configurés pour la surveillance avec Prometheus et Grafana en production.
+
+## Fonctionnalités de Sécurité
+- Authentification basée sur JWT
+- Gestion des secrets avec Kubernetes secrets
+- Contrôle d'accès basé sur les rôles
+- Configurations spécifiques à l'environnement
+
+## Structure du Projet
 
 ```
-cd existing_repo
-git remote add origin https://gitlab.com/jh.hunt3r/gitlab-devop-exam.git
-git branch -M main
-git push -uf origin main
+.
+├── .gitlab-ci.yml              # Configuration du pipeline GitLab CI/CD
+├── docker-compose.yml          # Configuration pour développement local
+├── README.md                   # Documentation du projet
+├── services/                   # Tous les microservices
+│   ├── gateway/                # Service Passerelle
+│   │   ├── Dockerfile          # Instructions de build Docker
+│   │   ├── requirements.txt    # Dépendances Python
+│   │   └── src/                # Code source
+│   ├── user/                   # Service Utilisateur
+│   │   ├── Dockerfile
+│   │   ├── requirements.txt
+│   │   └── src/
+│   └── order/                  # Service Commande
+│       ├── Dockerfile
+│       ├── requirements.txt
+│       └── src/
+├── helm/                       # Charts Helm pour déploiement Kubernetes
+│   ├── charts/                 # Charts par environnement
+│   │   ├── dev/
+│   │   ├── qa/
+│   │   ├── staging/
+│   │   └── prod/
+│   └── templates/              # Templates Helm réutilisables
+└── k8s/                        # Configurations Kubernetes brutes
+    ├── namespaces/             # Définitions des namespaces
+    ├── secrets/                # Templates de secrets
+    └── configmaps/             # ConfigMaps pour configuration
 ```
-
-## Integrate with your tools
-
-- [ ] [Set up project integrations](https://gitlab.com/jh.hunt3r/gitlab-devop-exam/-/settings/integrations)
-
-## Collaborate with your team
-
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Set auto-merge](https://docs.gitlab.com/ee/user/project/merge_requests/merge_when_pipeline_succeeds.html)
-
-## Test and Deploy
-
-Use the built-in continuous integration in GitLab.
-
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/index.html)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
-
-***
-
-# Editing this README
-
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
-
-## Suggestions for a good README
-
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
-
-## Name
-Choose a self-explaining name for your project.
-
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
-
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
-
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
-
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
-
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
-
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
-
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
-
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
-
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
-
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
-
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
-
-## License
-For open source projects, say how it is licensed.
-
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
-FFEFAEFAEFaefaefaef

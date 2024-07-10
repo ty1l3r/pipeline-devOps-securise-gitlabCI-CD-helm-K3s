@@ -1,12 +1,32 @@
 stages:
+  - test
   - build
   - run
   - deploy
 
 variables:
-  #DOCKER_IMAGE_NAME: registry.gitlab.com/jh.hunt3r/gitlab-exam .
   KUBECONFIG: $KUBE_CONFIG
-  #HELM_CHART_PATH: helm
+
+test_users:
+  tags:
+    - test
+  stage: test
+  image: python:3.7.7
+  script:
+    - cd build/users-img
+    - pip install -r requirements.txt
+    - python tests/auth.py
+    - python tests/fake_db.py
+    
+test_orders:
+  tags:
+    - test
+  stage: test
+  image: python:3.7.7
+  script:
+    - cd build/orders-img
+    - pip install -r requirements.txt
+    - python tests/fake_db.py
 
 build_gateway:
   tags:
@@ -22,7 +42,8 @@ build_gateway:
     - cd build/gateway-img
     - pwd
     - docker -v
-    - docker login -u "jhtyl13r" -p "${PASSWORD_DOCKER_HUB}"
+    - echo "${DOCKER_AUTH_CONFIG}" > ~/.docker/config.json
+    - docker login
     - docker build -t gateway:$CI_COMMIT_REF_SLUG .
     - docker tag gateway:$CI_COMMIT_REF_SLUG jhtyl13r/jenkins-gateway
     - docker push jhtyl13r/jenkins-gateway
@@ -38,10 +59,11 @@ build_orders:
     DOCKER_DRIVER: overlay2
   script:
     - echo "Building Docker image..."
-    - cd build/order-img
+    - cd build/orders-img
     - pwd
     - docker -v
-    - docker login -u "jhtyl13r" -p "${PASSWORD_DOCKER_HUB}"
+    - echo "${DOCKER_AUTH_CONFIG}" > ~/.docker/config.json
+    - docker login
     - docker build -t orders:$CI_COMMIT_REF_SLUG .
     - docker tag orders:$CI_COMMIT_REF_SLUG jhtyl13r/jenkins-orders
     - docker push jhtyl13r/jenkins-orders
@@ -60,7 +82,8 @@ build_users:
     - cd build/users-img
     - pwd
     - docker -v
-    - docker login -u "jhtyl13r" -p "${PASSWORD_DOCKER_HUB}"
+    - echo "${DOCKER_AUTH_CONFIG}" > ~/.docker/config.json
+    - docker login
     - docker build -t users:$CI_COMMIT_REF_SLUG .
     - docker tag users:$CI_COMMIT_REF_SLUG jhtyl13r/jenkins-users
     - docker push jhtyl13r/jenkins-users
@@ -79,7 +102,8 @@ run_docker_gateway:
     - cd build/gateway-img
     - pwd
     - docker -v
-    - docker login -u "jhtyl13r" -p "${PASSWORD_DOCKER_HUB}"
+    - echo "${DOCKER_AUTH_CONFIG}" > ~/.docker/config.json
+    - docker login
     - docker pull jhtyl13r/jenkins-gateway
     - docker rm -f gateway || true
     - docker run -d --name gateway jhtyl13r/jenkins-gateway
@@ -97,10 +121,11 @@ run_docker_orders:
     DOCKER_DRIVER: overlay2
   script:
     - echo "Running tests..."
-    - cd build/order-img
+    - cd build/orders-img
     - pwd
     - docker -v
-    - docker login -u "jhtyl13r" -p "${PASSWORD_DOCKER_HUB}"
+    - echo "${DOCKER_AUTH_CONFIG}" > ~/.docker/config.json
+    - docker login
     - docker pull jhtyl13r/jenkins-orders
     - docker rm -f orders || true
     - docker run -d --name orders jhtyl13r/jenkins-orders
@@ -122,7 +147,8 @@ run_docker_users:
     - cd build/users-img
     - pwd
     - docker -v
-    - docker login -u "jhtyl13r" -p "${PASSWORD_DOCKER_HUB}"
+    - echo "${DOCKER_AUTH_CONFIG}" > ~/.docker/config.json
+    - docker login
     - docker pull jhtyl13r/jenkins-users
     - docker rm -f users || true
     - docker run -d --name users jhtyl13r/jenkins-users
@@ -145,9 +171,7 @@ deploy_helm_dev:
     - echo "Installing Helm release..."
     - helm install app-dev --namespace dev ./helm/charts/dev/ -f ./helm/charts/dev/values.yaml
 
-
-
-deploy_helm_staging:
+deploy_helm_qa:
   tags:
     - test
   stage: deploy
@@ -162,7 +186,7 @@ deploy_helm_staging:
     - echo "Installing Helm release..."
     - helm install app-qa --namespace qa ./helm/charts/qa/ -f ./helm/charts/qa/values.yaml
 
-deploy_helm_qa:
+deploy_helm_staging:
   tags:
     - test
   stage: deploy
