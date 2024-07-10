@@ -153,11 +153,14 @@ deploy_helm_staging:
   stage: deploy
   image: dtzar/helm-kubectl 
   script:
-    - export $KUBE_CONFIG=/tmp/kubeconfig
-    #- helm status orders -n dev
+    - rm -Rf .kube
+    - mkdir .kube
+    - ls
+    - cat $KUBE_CONFIG > .kube/config
+    - echo "Uninstalling existing Helm release..."
     - helm uninstall app-qa -n qa || true
-    - helm install app-qa --namespace qa ./charts/qa/ -f ./charts/qa/values.yaml
-
+    - echo "Installing Helm release..."
+    - helm install app-qa --namespace qa ./helm/charts/qa/ -f ./helm/charts/qa/values.yaml
 
 deploy_helm_qa:
   tags:
@@ -165,23 +168,29 @@ deploy_helm_qa:
   stage: deploy
   image: dtzar/helm-kubectl
   script:
-    - echo $KUBE_CONFIG | base64 -d > /tmp/kubeconfig
-    - export KUBECONFIG=/tmp/kubeconfig
-    #- helm status orders -n dev
+    - rm -Rf .kube
+    - mkdir .kube
+    - ls
+    - cat $KUBE_CONFIG > .kube/config
+    - echo "Uninstalling existing Helm release..."
     - helm uninstall app-staging -n staging || true
-    - helm install app-staging --namespace staging ./charts/staging/ -f ./charts/staging/values.yaml
-
+    - echo "Installing Helm release..."
+    - helm install app-staging --namespace staging ./helm/charts/staging/ -f ./helm/charts/staging/values.yaml
+  
 deploy_helm_prod:
   tags:
     - test
   stage: deploy
   image: dtzar/helm-kubectl
   script:
-    - echo $KUBE_CONFIG | base64 -d > /tmp/kubeconfig
-    - export KUBECONFIG=/tmp/kubeconfig
-    #- helm status orders -n dev
+    - rm -Rf .kube
+    - mkdir .kube
+    - ls
+    - cat $KUBE_CONFIG > .kube/config
+    - echo "Uninstalling existing Helm release..."
     - helm uninstall app-prod -n prod || true
-    - helm install app-prod --namespace prod ./charts/prod/ -f ./charts/prod/values.yaml
+    - echo "Installing Helm release..."
+    - helm install app-prod --namespace prod ./helm/charts/prod/ -f ./helm/charts/prod/values.yaml
   when: manual
   only:
     - main
